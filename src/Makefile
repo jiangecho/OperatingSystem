@@ -6,7 +6,7 @@ objs = out/head.o out/main.o out/video.o \
 
 target = floppy.img
 
-cc = gcc -fpack-struct -std=c99 -c -I . -I ./include
+CC = gcc -fpack-struct -std=c99 -c -I . -I ./include
 
 # Generate target file.
 # First, we will link kernel module(using ld).
@@ -41,21 +41,21 @@ out/interrupts.o : asm/interrupts.asm
 
 # Compile C files in init folder.
 out/main.o : init/main.c include/kernel.h
-	${cc} init/main.c -o out/main.o
+	${CC} init/main.c -o out/main.o
 # Compile C files in drivers folder.
 out/video.o : drivers/video/video.c include/kernel.h
-	${cc} drivers/video/video.c -o out/video.o
+	${CC} drivers/video/video.c -o out/video.o
 out/mouse.o : drivers/mouse/mouse.c include/kernel.h include/asm/io.h
-	${cc} drivers/mouse/mouse.c -o out/mouse.o
+	${CC} drivers/mouse/mouse.c -o out/mouse.o
 out/keyboard.o : drivers/keyboard/keyboard.c include/kernel.h include/asm/io.h
-	${cc} drivers/keyboard/keyboard.c -o out/keyboard.o
+	${CC} drivers/keyboard/keyboard.c -o out/keyboard.o
 # Compile C files in kernel folder.
 out/interrupt.o : kernel/interrupt.c include/kernel.h include/asm/io.h
-	${cc} kernel/interrupt.c -o out/interrupt.o
+	${CC} kernel/interrupt.c -o out/interrupt.o
 out/gui.o : kernel/gui/gui.c include/kernel.h
-	${cc} kernel/gui/gui.c -o out/gui.o
+	${CC} kernel/gui/gui.c -o out/gui.o
 out/sched.o : kernel/sched.c include/kernel.h include/asm/io.h
-	${cc} kernel/sched.c -o out/sched.o
+	${CC} kernel/sched.c -o out/sched.o
 # Compile C files in include folder.
 out/impl.o : include/impl.c include/kernel.h
 	gcc -I . -I ./include -fpack-struct -c include/impl.c -o out/impl.o
