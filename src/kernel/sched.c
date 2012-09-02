@@ -1,15 +1,19 @@
-#include "kernel.h"
 #include "asm/io.h"
+#include "sched.h"
+#include "video.h"
+#include "interrupt.h"
 
 #define TIMER_IRQ 8
 
-ASM_FUNC void timerASMHandler();
-void timerHandler();
+extern void timerASMHandler();
 unsigned short white = 0;
 unsigned short black = 0;
 
 void initSchedule() {
-	white = rgb565(255, 255, 255);
+	white = rgb(255, 255, 255);
+
+	//setTSSDesc();
+
 	outb(0x70, 0x0B);
 	char prev = inb(0x71);
 	outb(0x70, 0x0B);

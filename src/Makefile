@@ -2,7 +2,7 @@
 OBJS = out/head.o out/main.o out/video.o \
 	out/interrupt.o out/mouse.o \
 	out/interrupts.o out/sched.o \
-	out/keyboard.o out/gui.o out/gdt.o
+	out/keyboard.o out/gdt.o
 
 TARGET = floppy.img
 
@@ -37,30 +37,34 @@ out/interrupts.o : asm/interrupts.asm
 	nasm -f elf asm/interrupts.asm -o out/interrupts.o
 
 # init/
-out/main.o : init/main.c include/kernel.h
+out/main.o : init/main.c \
+			 include/video.h include/interrupt.h
 	${CC} init/main.c -o out/main.o
 
 # driver/
 #       /video/
-out/video.o : drivers/video/video.c include/kernel.h
+out/video.o : drivers/video/video.c \
+			  include/video.h
 	${CC} drivers/video/video.c -o out/video.o
 #       /mouse/
-out/mouse.o : drivers/mouse/mouse.c include/kernel.h include/asm/io.h
+out/mouse.o : drivers/mouse/mouse.c \
+			  include/asm/io.h include/interrupt.h
 	${CC} drivers/mouse/mouse.c -o out/mouse.o
 #       /keyboard/
-out/keyboard.o : drivers/keyboard/keyboard.c include/kernel.h include/asm/io.h
+out/keyboard.o : drivers/keyboard/keyboard.c \
+				 include/asm/io.h include/interrupt.h
 	${CC} drivers/keyboard/keyboard.c -o out/keyboard.o
 
 # kernel/
-out/interrupt.o : kernel/interrupt.c include/kernel.h include/asm/io.h
+out/interrupt.o : kernel/interrupt.c \
+				  include/asm/io.h include/interrupt.h
 	${CC} kernel/interrupt.c -o out/interrupt.o
-out/sched.o : kernel/sched.c include/kernel.h include/asm/io.h
+out/sched.o : kernel/sched.c \
+			  include/asm/io.h include/sched.h include/interrupt.h \
+			  include/video.h
 	${CC} kernel/sched.c -o out/sched.o
 out/gdt.o : kernel/gdt.c
 	${CC} kernel/gdt.c -o out/gdt.o
-#       /gui
-out/gui.o : kernel/gui/gui.c include/kernel.h
-	${CC} kernel/gui/gui.c -o out/gui.o
 
 .PHONY : clean
 clean :

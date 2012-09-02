@@ -4,6 +4,13 @@ struct GDTDescriptor {
 };
 
 struct GDTDescriptor gdtDesc;
+
+/* 'long long' type in GCC:
+ * .size XXXX, 8
+ * XXXX:
+ *     .long YYYY
+ *     .long ZZZZ
+ */
 long long gdt[256];
 
 void setupGDT() {

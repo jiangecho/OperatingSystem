@@ -1,17 +1,12 @@
-#include "kernel.h"
 #include "asm/io.h"
+#include "interrupt.h"
 
-void keyboardASMHandler();
-void keyboardHandler();
+extern void keyboardASMHandler();
 
 #define KEYBOARD_INTERRUPT_IRQ_NUMBER 1
 
 void initKeyboard() {
 	installInterruptHandler(KEYBOARD_INTERRUPT_IRQ_NUMBER, keyboardASMHandler);
-}
-
-void processKey(unsigned char key, int type) {
-
 }
 
 void keyboardHandler() {
@@ -20,22 +15,5 @@ void keyboardHandler() {
 	if (ch == 0x0 || ch > 0x80) {
 		return;
 	} else {
-		// Emulate mouse.
-		switch (ch) {
-		case 0x48:
-			moveMouse(0, -5);
-			break;
-		case 0x4B:
-			moveMouse(-5, 0);
-			break;
-		case 0x4D:
-			moveMouse(5, 0);
-			break;
-		case 0x50:
-			moveMouse(0, 5);
-			break;
-		case 0x34:
-			break;
-		}
 	}
 }

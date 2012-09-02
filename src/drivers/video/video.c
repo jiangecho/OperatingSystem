@@ -1,4 +1,4 @@
-#include "kernel.h"
+#include "video.h"
 
 //The size of screen.
 unsigned int scrWidth = SCREEN_WIDTH - 1;

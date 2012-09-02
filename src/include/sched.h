@@ -27,6 +27,30 @@ struct TSS {
 	long ldt; /* 16 high bits zero */
 	long trace_bitmap; /* bits: trace 0, bitmap 16-31 */
 };
+struct Task {
+	long long ldt[3];
+	struct TSS tss;
+};
+#define INIT_TASK \
+	{ \
+		{0,0}, \
+		{0x9f,0xc0fa00}, \
+		{0x9f,0xc0f200}, \
+	}, \
+	{ \
+		0,PAGE_SIZE+(long)&init_task,0x10,0,0,0,0,(long)&pg_dir,\
+		0,0,0,0,0,0,0,0, \
+		0,0,0x17,0x17,0x17,0x17,0x17,0x17, \
+		_LDT(0),0x80000000, \
+	} \
+}
+
+#define FIRST_TSS_ENTRY 3
+#define FIRST_LDT_ENTRY (FIRST_TSS_ENTRY+1)
+#define _TSS(n) ((((unsigned long) n)<<4)+(FIRST_TSS_ENTRY<<3))
+#define _LDT(n) ((((unsigned long) n)<<4)+(FIRST_LDT_ENTRY<<3))
+#define ltr(n) __asm__("ltr %%ax"::"a" (_TSS(n)))
+#define lldt(n) __asm__("lldt %%ax"::"a" (_LDT(n)))
 
 #define _set_tssldt_desc(n,addr,type) \
 		__asm__ ("movw $104,%1\n\t" \

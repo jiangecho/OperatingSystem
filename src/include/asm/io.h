@@ -6,7 +6,7 @@
 
 #define inb(port) ({ \
 	unsigned char _v; \
-	__asm__("inb %%dx, %%al" : "=a"(_v) : "d"(port)); \
+	__asm__ volatile ("inb %%dx, %%al" : "=a"(_v) : "d"(port)); \
 	_v; \
 })
 

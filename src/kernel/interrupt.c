@@ -1,5 +1,5 @@
-#include "kernel.h"
 #include "asm/io.h"
+#include "interrupt.h"
 
 struct IDT {
 	unsigned short offset0015;
@@ -18,17 +18,10 @@ struct IDTDescriptor {
 	struct IDT *addr;
 };
 
-static void interruptInit8259A();
-static void interruptInitIdt();
-void interruptDefaultHandler();
+extern void interruptDefaultHandler();
 
 static struct IDTDescriptor idtDesc;
 static struct IDT idt[256];
-
-void initInterrupt() {
-	interruptInit8259A();
-	interruptInitIdt();
-}
 
 static void interruptInit8259A() {
 	outb(0x20, 0x11);
@@ -65,13 +58,11 @@ static void interruptInitIdt() {
 	__asm__("lidt %0" : "=m"(idtDesc));
 }
 
-void sti() {
-	__asm__( "sti" );
+void initInterrupt() {
+	interruptInit8259A();
+	interruptInitIdt();
 }
 
-void cli() {
-	__asm__( "cli" );
-}
 
 void setInterruptHandler(unsigned char number, void *handler) {
 	cli();
