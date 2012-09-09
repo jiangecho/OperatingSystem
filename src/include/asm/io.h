@@ -1,7 +1,7 @@
 #ifndef IO_H_
 #define IO_H_
 
-#define outb(port, value) \
+#define outb(value, port) \
 	__asm__("outb %%al, %%dx" : : "a"(value) , "d"(port))
 
 #define inb(port) ({ \

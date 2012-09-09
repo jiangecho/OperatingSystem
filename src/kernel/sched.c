@@ -1,29 +1,40 @@
 #include "asm/io.h"
-#include "sched.h"
+#include "asm/system.h"
+#include "asm/head.h"
+#include "ksched.h"
 #include "video.h"
-#include "interrupt.h"
 
-#define TIMER_IRQ 8
+#define TIMER_IRQ 0
+#define LATCH (1193180/100)
 
-extern void timerASMHandler();
+extern void timer_interrupt();
 unsigned short white = 0;
 unsigned short black = 0;
 
-void initSchedule() {
+struct Task task0 = INIT_TASK;
+
+void scheduleInit() {
 	white = rgb(255, 255, 255);
 
-	//setTSSDesc();
+	setTSSDesc(gdt+FIRST_TSS_ENTRY, &(task0.tss));
+	setLDTDesc(gdt+FIRST_LDT_ENTRY, &(task0.ldt));
+	__asm__("pushfl ; andl $0xffffbfff,(%esp) ; popfl");
+	ltr(0);
+	lldt(0);
 
-	outb(0x70, 0x0B);
-	char prev = inb(0x71);
-	outb(0x70, 0x0B);
-	outb(0x71, prev | 0x40);
-	installInterruptHandler(8, timerASMHandler);
+	/*outb(0x43, 0x36);
+	 outb(0x40, LATCH & 0xff);
+	 outb(0x40, LATCH >> 8);*/
+
+	outb(0x36, 0x43);
+	outb(LATCH & 0xff, 0x40);
+	outb(LATCH >> 8, 0x40);
+
+	setIntrGate(0x20, &timer_interrupt);
+	outb(inb(0x21)&~0x01, 0x21); // unmask timer interrupt
 }
 
-void timerHandler() {
-	outb(0x70, 0x0C); // select register C
-	inb(0x71); // just throw away contents.
+void doTimer() {
 	static int i = 0;
 	if (i) {
 		fillRect(0, 0, 20, 20, black);
