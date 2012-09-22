@@ -1,17 +1,17 @@
 # "*.s" will compile with "gas".
 
-.globl start, gdt, idt, task0_stack
+.globl start, gdt, idt
 
 start:
-    movl $0x10, %eax /* load segment registers */
-    mov %ax, %ds
-    mov %ax, %es
-    mov %ax, %fs
-    mov %ax, %gs
-    mov %ax, %ss
-    mov $0x8ffff, %esp
-    movb $0x11, %al /* reprogram the interrupts */
-    outb %al, $0x20
+	movl $0x10, %eax /* load segment registers */
+	mov %ax, %ds
+	mov %ax, %es
+	mov %ax, %fs
+	mov %ax, %gs
+	mov %ax, %ss
+	movl $0x8ffff, %esp
+	movb $0x11, %al /* reprogram the interrupts */
+	outb %al, $0x20
 	outb %al, $0xa0
 	movb $0x20, %al
 	outb %al, $0x21
@@ -27,11 +27,11 @@ start:
 	movb $0xff, %al
 	outb %al, $0x21 /* mask off all interrupt */
 	outb %al, $0xa1
-    call setup_idt /* setup desc tables */
+	call setup_idt /* setup desc tables */
 	call setup_gdt
-    call main
-	EL:
-	    jmp EL /* main should never return here */
+	call main
+EL:
+	jmp EL /* main should never return here */
 
 setup_idt:
 	lea ignore_intr,%edx
@@ -40,12 +40,12 @@ setup_idt:
 	movw $0x8E00,%dx	/* interrupt gate - dpl=0, present */
 	lea idt,%edi
 	mov $256,%ecx
-	rp_sidt:
-		movl %eax,(%edi)
-		movl %edx,4(%edi)
-		addl $8,%edi
-		dec %ecx
-		jne rp_sidt
+rp_sidt:
+	movl %eax,(%edi)
+	movl %edx,4(%edi)
+	addl $8,%edi
+	dec %ecx
+	jne rp_sidt
 	lidt idt_desc
 	ret
 idt_desc:
@@ -54,10 +54,10 @@ idt_desc:
 idt:
 	.fill 256,8,0
 ignore_intr:
-    movb $0x20, %al
-    outb %al, $0x20
-    outb %al, $0xa0
-    iret
+	movb $0x20, %al
+	outb %al, $0x20
+	outb %al, $0xa0
+	iret
 
 setup_gdt:
 	lgdt gdt_desc
@@ -71,6 +71,3 @@ gdt:
 	.quad 0x00cf92000000ffff /* 16Mb */
 	.quad 0x0000000000000000
 	.fill 252,8,0
-
-.fill 128,4,0
-	task0_stack:

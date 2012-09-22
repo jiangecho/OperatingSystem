@@ -1,7 +1,12 @@
 #ifndef SCHED_H_
 #define SCHED_H_
 
-// These codes is copied from linux 0.11.
+#define NR_TASKS 64
+#define NULL (void *) 0
+
+#define HZ 100
+#define LATCH (1193180/HZ)
+
 struct TSS {
 	long back_link; /* 16 high bits zero */
 	long esp0;
@@ -27,31 +32,43 @@ struct TSS {
 	long ldt; /* 16 high bits zero */
 	long trace_bitmap; /* bits: trace 0, bitmap 16-31 */
 };
-struct Task {
-	struct {long a,b;} ldt[3];
-	struct TSS tss;
+
+struct TaskRegs {
+	long esp;
+	long eip;
+	long eflags;
+	long eax, ebx, ecx, edx;
+	long ebp;
+	long esi;
+	long edi;
+	long es, cs, ss, ds, fs, gs;
 };
+
+struct Task {
+	int state;
+	struct TaskRegs reg;
+};
+
+#define INIT_TSS \
+{ \
+	0,0/*esp0*/,0x10,0,0,0,0,0, \
+	0,0,0,0,0,0,0,0, \
+	0,0,0x17,0x17,0x17,0x17,0x17,0x17, \
+	LDT_SEL,0x80000000, \
+}
+
+#define INIT_LDT \
+	   {{0,0}, \
+		{0x9f,0xc0fa00}, \
+		{0x9f,0xc0f200}}
 
 #define INIT_TASK \
 { \
-	{ \
-		{0,0}, \
-		{0x9f,0xc0fa00}, \
-		{0x9f,0xc0f200}, \
-	}, \
-	{ \
-		0,(long) &task0_stack,0x10,0,0,0,0,0, \
-		0,0,0,0,0,0,0,0, \
-		0,0,0x17,0x17,0x17,0x17,0x17,0x17, \
-		_LDT(0),0x80000000, \
-	} \
 }
 
-#define FIRST_TSS_ENTRY 4
-#define FIRST_LDT_ENTRY (FIRST_TSS_ENTRY+1)
-#define _TSS(n) ((((unsigned long) n)<<4)+(FIRST_TSS_ENTRY<<3))
-#define _LDT(n) ((((unsigned long) n)<<4)+(FIRST_LDT_ENTRY<<3))
-#define ltr(n) __asm__("ltr %%ax"::"a" (_TSS(n)))
-#define lldt(n) __asm__("lldt %%ax"::"a" (_LDT(n)))
+#define TSS_ENTRY 4
+#define LDT_ENTRY (TSS_ENTRY+1)
+#define TSS_SEL (TSS_ENTRY<<3)
+#define LDT_SEL (LDT_ENTRY<<3)
 
 #endif

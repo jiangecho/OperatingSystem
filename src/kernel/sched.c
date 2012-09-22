@@ -4,27 +4,26 @@
 #include "ksched.h"
 #include "video.h"
 
-#define TIMER_IRQ 0
-#define LATCH (1193180/100)
-
 extern void timer_interrupt();
-unsigned short white = 0;
-unsigned short black = 0;
 
-struct Task task0 = INIT_TASK;
+struct Task init_task = INIT_TASK;
+struct Task *current = &init_task;
+struct Task *task[NR_TASKS] = { &init_task, };
+struct TSS tss = INIT_TSS;
+struct {
+	long a, b;
+} ldt[3] = INIT_LDT;
 
 void scheduleInit() {
-	white = rgb(255, 255, 255);
+	for (int i = 1; i < NR_TASKS; i++) {
+		task[i] = NULL;
+	}
 
-	setTSSDesc(gdt+FIRST_TSS_ENTRY, &(task0.tss));
-	setLDTDesc(gdt+FIRST_LDT_ENTRY, &(task0.ldt));
-	__asm__("pushfl ; andl $0xffffbfff,(%esp) ; popfl");
-	ltr(0);
-	lldt(0);
-
-	/*outb(0x43, 0x36);
-	 outb(0x40, LATCH & 0xff);
-	 outb(0x40, LATCH >> 8);*/
+	setupTSS(tss);
+	setupLDT(ldt);
+	__asm__("pushfl ; andl $0xffffbfff,(%esp) ; popfl"); // clear nt
+	__asm__("ltr %%ax"::"a" (TSS_SEL)); // load tss
+	__asm__("lldt %%ax"::"a" (LDT_SEL)); // load ldt
 
 	outb(0x36, 0x43);
 	outb(LATCH & 0xff, 0x40);
@@ -35,12 +34,13 @@ void scheduleInit() {
 }
 
 void doTimer() {
-	static int i = 0;
-	if (i) {
-		fillRect(0, 0, 20, 20, black);
-		i = 0;
-	} else {
-		fillRect(0, 0, 20, 20, white);
-		i = 1;
-	}
+	// using software-switching
+	__asm__("movl %%esp, !!prev.esp\n\t"
+			"movl !!next.esp, %%esp\n\t"
+			"movl $1f, !!prev.eip\n\t"
+			"pushl !!next.eip\n\t"
+			"ret\n\t"
+			"1:\n\t"
+	:"=a"(prev->esp), "=a"(prev->eip)
+	 :"a"(next->esp),  "a"(next->eip));
 }

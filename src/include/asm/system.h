@@ -55,7 +55,7 @@ __asm__ ("movw $104,%1\n\t" \
 	 "m" (*(n+5)), "m" (*(n+6)), "m" (*(n+7)) \
 	)
 
-#define setTSSDesc(n,addr) _set_tssldt_desc(((char *) (n)),addr,"0x89")
-#define setLDTDesc(n,addr) _set_tssldt_desc(((char *) (n)),addr,"0x82")
+#define setupTSS(addr) _set_tssldt_desc(((char *) (gdt+TSS_ENTRY)),addr,"0x89")
+#define setupLDT(addr) _set_tssldt_desc(((char *) (gdt+LDT_ENTRY)),addr,"0x82")
 
 #endif

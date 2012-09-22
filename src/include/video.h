@@ -1,27 +1,24 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
-// The default format of RGB is 5:6:5 now,
-// if change default format, OK when you change the next line.
-#define rgb(r,g,b) rgb565(r,g,b)
+// Human Screen Size(from 1 to (800|600))
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
-extern unsigned short rgb565(unsigned char r, unsigned char g, unsigned char b);
-extern void drawPoint(unsigned int x, unsigned int y, unsigned short color);
-extern unsigned short getPoint(unsigned int x, unsigned int y);
-extern void fillRect(unsigned int x1, unsigned int y1, unsigned int x2,
-		unsigned int y2, unsigned int color);
-extern void cleanScreen(unsigned short color);
-extern void drawXLine(unsigned int y, unsigned int x1, unsigned int x2,
-		unsigned short color);
-extern void drawYLine(unsigned int x, unsigned int y1, unsigned int y2,
-		unsigned short color);
-extern void drawRect(unsigned int x1, unsigned int y1, unsigned int x2,
-		unsigned y2, unsigned short color);
-extern void getScreenImage(unsigned int x, unsigned int y, unsigned int width,
-		unsigned int height, unsigned short *addr);
-extern void drawImage(unsigned int x, unsigned int y, unsigned int width,
-		unsigned int height, unsigned short *addr);
+// Computer Screen Size(from 0 to (Human Screen Size - 1)).
+#define C_SCREEN_WIDTH (SCREEN_WIDTH - 1)
+#define C_SCREEN_HEIGHT (SCREEN_HEIGHT - 1)
+
+#define VESA_ADDR 0x80001
+
+#define RGB(r,g,b) RGB565(r,g,b)
+
+#define RGB565(r,g,b)     \
+   (((r & 31)) |          \
+	((g & 63) << 5) |     \
+	((b & 31) << 11))
+
+extern void setColor(unsigned int x, unsigned int y, unsigned short color);
+extern void fillRect(int x1, int x2, int y1, int y2, unsigned short color);
 
 #endif
