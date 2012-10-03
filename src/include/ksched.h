@@ -46,27 +46,26 @@ struct TaskRegs {
 
 struct Task {
 	int state;
+	int counter;
+	int goodness;
 	struct TaskRegs reg;
 };
 
 #define INIT_TSS \
 { \
-	0,0/*esp0*/,0x10,0,0,0,0,0, \
+	0,(long) &init_task_stack_tail,0x10,0,0,0,0,0, \
 	0,0,0,0,0,0,0,0, \
 	0,0,0x17,0x17,0x17,0x17,0x17,0x17, \
 	LDT_SEL,0x80000000, \
 }
 
-#define INIT_LDT \
-	   {{0,0}, \
-		{0x9f,0xc0fa00}, \
-		{0x9f,0xc0f200}}
+#define INIT_LDT {0, 0xc0fa000000009f, 0xc0f2000000009f}
 
 #define INIT_TASK \
 { \
 }
 
-#define TSS_ENTRY 4
+#define TSS_ENTRY 3
 #define LDT_ENTRY (TSS_ENTRY+1)
 #define TSS_SEL (TSS_ENTRY<<3)
 #define LDT_SEL (LDT_ENTRY<<3)

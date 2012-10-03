@@ -1,5 +1,5 @@
 # Makefile
-OBJS = fork.o sched.o asm/asm.o
+OBJS = sched.o asm/asm.o
 TARGET = kernel.o
 
 AS = as
@@ -17,7 +17,7 @@ CFLAGS = -fpack-struct -std=c99 -c -I../include \
 $(TARGET) : $(OBJS)
 	$(LD) -r -o $(TARGET) $(OBJS)
 
-asm/asm.o :
+asm/asm.o ::
 	(cd asm; make)
 
 clean :
@@ -31,7 +31,6 @@ dep:
 	rm tmp_make
 	
 ### Dependencies:
-fork.o: fork.c ../include/ksched.h ../include/asm/system.h \
- ../include/asm/head.h
 sched.o: sched.c ../include/asm/io.h ../include/asm/system.h \
- ../include/asm/head.h ../include/ksched.h ../include/video.h
+ ../include/asm/head.h ../include/ksched.h ../include/video.h \
+ ../include/sys_call.h

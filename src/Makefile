@@ -1,5 +1,5 @@
 # Makefile
-OBJS = boot/head.o init/main.o drivers/drivers.o
+OBJS = boot/head.o init/main.o drivers/drivers.o kernel/kernel.o
 # kernel/kernel.o
 TARGET = floppy.img
 
@@ -20,6 +20,7 @@ $(TARGET) : $(OBJS) $(TOOLS) boot/bootsect.bin boot/setup.bin
 	$(LD) -o kernel.ld -Ttext 0x90000 -e start $(OBJS)
 	objcopy -R .note -R .comment -S -O binary kernel.ld kernel.bin
 	$(BUILD) $(TARGET) boot/bootsect.bin boot/setup.bin kernel.bin
+	$(PUT) $(TARGET) 36864 res/asc16
 	
 # tools/
 tools/build : tools/build.cpp
@@ -40,13 +41,13 @@ boot/setup.bin : boot/setup.asm
 
 boot/head.o : boot/head.s
 
-#kernel/kernel.o:
-#	(cd kernel; make)
-drivers/drivers.o:
+kernel/kernel.o::
+	(cd kernel; make)
+drivers/drivers.o ::
 	(cd drivers; make)
 
 clean :
-	-rm $(OBJS) $(TARGET) $(TOOLS)
+	-rm $(OBJS) $(TARGET)
 	-rm boot/bootsect.bin boot/setup.bin
 	-rm kernel.bin kernel.ld
 	(cd kernel; make clean)
@@ -61,4 +62,5 @@ dep :
 	(cd drivers; make dep)
 
 ### Dependencies:
-init/main.o: init/main.c include/video.h include/asm/system.h
+init/main.o: init/main.c include/video.h include/asm/system.h \
+ include/sys_call.h

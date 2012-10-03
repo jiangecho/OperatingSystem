@@ -65,7 +65,7 @@ set_vesa_mode:
 
 read_kernel:
 	push es
-.read_kernel_1:
+read_kernel_start:
 	mov ax, 0x9000
 	mov es, ax
 	mov bx, 0
@@ -76,11 +76,9 @@ read_kernel:
 	mov cl, 4
 	mov al, 15
 	int 0x13
-	jc .read_kernel_1
-  
+	jc read_kernel_start
 	add bx, 15 * 512
-  
-.read_kernel_2:
+read_kernel_2:
 	mov dh, 1
 	mov dl, [BOOT_DRIVER]
 	mov ch, 0
@@ -88,29 +86,55 @@ read_kernel:
 	mov ah, 2
 	mov al, 18
 	int 0x13
-	jc .read_kernel_2
+	jc read_kernel_2
+read_kernel_end:
+	pop es
+	ret
 
+read_disk:
+	push es
+read_disk_start:
+	mov es, ax
+	mov bx, 0
+read_disk_1:
+	mov ah, 2
+	mov dl, [BOOT_DRIVER]
+	mov cl, 1
+	mov al, 18
+	int 0x13
+	jc read_disk_1
+	dec di
+	cmp di, 0
+	je read_disk_end
+	add bx, 18 * 512
+	xor dh, 1
+	cmp dh, 0
+	jne read_disk_1
+	inc ch
+	jmp read_disk_1
+read_disk_end:
 	pop es
 	ret
 
 main:
-	mov ax, 0x1000
+	mov ax, 0x1000 ; initial segment registers
 	mov ds, ax
 	mov ax, 0x8000
 	mov ss, ax
 	mov sp, 0xffff
-   
 	call get_boot_driver
 	call set_vesa_mode
-	call read_kernel
-	lgdt [gdt_descriptor]
-
-	cli
-
-	mov eax, cr0
+	mov ax, 0x5000 ; read font
+	mov di, 7
+	mov dh, 0
+	mov ch, 2
+	call read_disk
+	call read_kernel ; read kernel
+	lgdt [gdt_descriptor] ; load gdt, ready for enter protected mode
+	cli ; close interrupt
+	mov eax, cr0 ; now we will enter protected mode
 	or eax, 1
 	mov cr0, eax
-
-	jmp dword 0x8:0x90000
+	jmp dword 0x8:0x90000 ; okay, then jump to kernel (kernel/head.s)
 
 times 1024-($-$$) db 0

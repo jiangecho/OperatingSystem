@@ -1,6 +1,6 @@
 # "*.s" will compile with "gas".
 
-.globl start, gdt, idt
+.globl start, gdt, idt, init_task_stack_tail
 
 start:
 	movl $0x10, %eax /* load segment registers */
@@ -63,11 +63,15 @@ setup_gdt:
 	lgdt gdt_desc
 	ret
 gdt_desc:
-	.word 256*8-1
+	.word 5*8-1
 	.long gdt
 gdt:
 	.quad 0x0000000000000000 /* NULL descriptor */
 	.quad 0x00cf9a000000ffff /* 16Mb */
 	.quad 0x00cf92000000ffff /* 16Mb */
-	.quad 0x0000000000000000
-	.fill 252,8,0
+	.quad 0x0000000000000000 /* tss */
+	.quad 0x0000000000000000 /* ldt */
+
+init_task_stack_head:
+	.fill 128,4,0
+init_task_stack_tail:

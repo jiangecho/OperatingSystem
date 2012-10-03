@@ -28,4 +28,4 @@ dep:
 	
 ### Dependencies:
 vesa.o: vesa.c ../../include/video.h
-vesa_util.o: vesa_util.c ../../include/video.h
+vesa_util.o: vesa_util.c ../../include/video.h ../../include/sys_call.h

@@ -7,7 +7,7 @@ LD = ld
 ${TARGET} : ${OBJS}
 	${LD} -r -o ${TARGET} ${OBJS}
 
-video/video.o :
+video/video.o ::
 	(cd video; make)
 
 clean :

@@ -7,7 +7,7 @@ int main(int argc, char** argv) {
 	char ch;
 	unsigned int count = 0;
 	if (argc == 1) {
-		cout << "Usave: put original position file";
+		cout << "Usage: put original position file";
 	} else {
 		unsigned int pos = atoi(argv[2]);
 		ofstream outfile(argv[1], ios_base::in | ios_base::out);
