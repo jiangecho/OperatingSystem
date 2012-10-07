@@ -1,5 +1,5 @@
 # Makefile
-OBJS = boot/head.o init/main.o drivers/drivers.o kernel/kernel.o
+OBJS = init/head.o init/main.o drivers/drivers.o kernel/kernel.o
 # kernel/kernel.o
 TARGET = floppy.img
 
@@ -11,7 +11,7 @@ AS = as
 IAS = nasm
 LD = ld
 CC = gcc
-CPP = cpp -nostdinc -Iinclude
+CPP = gcc -E -nostdinc -Iinclude
 CFLAGS = -fpack-struct -std=c99 -c -Iinclude \
 -Wall -O -fstrength-reduce -fomit-frame-pointer -nostdinc
 
@@ -28,6 +28,10 @@ tools/build : tools/build.cpp
 tools/put : tools/put.cpp
 	g++ tools/put.cpp -o tools/put
 
+init/head.o : init/head.S include/asm/macro.h
+	$(CPP) init/head.S -o init/_head.s
+	$(AS) init/_head.s -o init/head.o
+
 %.o : %.s
 	$(AS) $< -o $*.o
 %.o : %.c
@@ -38,8 +42,6 @@ boot/bootsect.bin : boot/bootsect.asm
 	$(IAS) boot/bootsect.asm -o boot/bootsect.bin
 boot/setup.bin : boot/setup.asm
 	$(IAS) boot/setup.asm -o boot/setup.bin
-
-boot/head.o : boot/head.s
 
 kernel/kernel.o::
 	(cd kernel; make)

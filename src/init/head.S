@@ -1,8 +1,6 @@
-# "*.s" will compile with "gas".
+#include "asm/macro.h"
 
-.globl start, gdt, idt, init_task_stack_tail
-
-start:
+ENTRY(start):
 	movl $0x10, %eax /* load segment registers */
 	mov %ax, %ds
 	mov %ax, %es
@@ -30,8 +28,7 @@ start:
 	call setup_idt /* setup desc tables */
 	call setup_gdt
 	call main
-EL:
-	jmp EL /* main should never return here */
+1:	jmp 1b /* main should never return here */
 
 setup_idt:
 	lea ignore_intr,%edx
@@ -51,7 +48,7 @@ rp_sidt:
 idt_desc:
 	.word 256*8-1
 	.long idt
-idt:
+ENTRY(idt):
 	.fill 256,8,0
 ignore_intr:
 	movb $0x20, %al
@@ -65,7 +62,7 @@ setup_gdt:
 gdt_desc:
 	.word 5*8-1
 	.long gdt
-gdt:
+ENTRY(gdt):
 	.quad 0x0000000000000000 /* NULL descriptor */
 	.quad 0x00cf9a000000ffff /* 16Mb */
 	.quad 0x00cf92000000ffff /* 16Mb */
@@ -74,4 +71,8 @@ gdt:
 
 init_task_stack_head:
 	.fill 128,4,0
-init_task_stack_tail:
+ENTRY(init_task_stack_tail):
+
+test_task_stack_head:
+	.fill 128,4,0
+ENTRY(test_task_stack_tail):

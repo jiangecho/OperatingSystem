@@ -7,6 +7,8 @@
 #define HZ 100
 #define LATCH (1193180/HZ)
 
+#define TASK_RUNNING 0
+
 struct TSS {
 	long back_link; /* 16 high bits zero */
 	long esp0;
@@ -33,22 +35,16 @@ struct TSS {
 	long trace_bitmap; /* bits: trace 0, bitmap 16-31 */
 };
 
-struct TaskRegs {
-	long esp;
-	long eip;
-	long eflags;
-	long eax, ebx, ecx, edx;
-	long ebp;
-	long esi;
-	long edi;
-	long es, cs, ss, ds, fs, gs;
-};
-
 struct Task {
 	int state;
 	int counter;
 	int goodness;
-	struct TaskRegs reg;
+	long esp, eip, ebp;
+	long eflags;
+	long eax, ebx, ecx, edx;
+	long esi, edi;
+	short es, cs, ss, ds, fs, gs;
+	long esp0;
 };
 
 #define INIT_TSS \
@@ -63,6 +59,12 @@ struct Task {
 
 #define INIT_TASK \
 { \
+	TASK_RUNNING, 15, 0, \
+	0, 0, 0, \
+	0, \
+	0, 0, 0, 0,  \
+	0, 0, \
+	0, 0, 0, 0, 0, 0, (long) &init_task_stack_tail \
 }
 
 #define TSS_ENTRY 3

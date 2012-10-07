@@ -31,12 +31,10 @@ gdt:
 
 get_boot_driver:
 	push fs
-  
 	mov ax, 0x8000
 	mov fs, ax
 	mov al, [fs:0]
 	mov [BOOT_DRIVER], al
-  
 	pop fs
 	ret
 
