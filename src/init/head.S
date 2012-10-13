@@ -1,14 +1,26 @@
 #include "asm/macro.h"
+#define ASM_FILE
+#include "multiboot.h"
+
+# setting up the Multiboot header - see GRUB docs for details
+/*.align 4
+.long 0x1BADB002
+.long 1|2
+.long -(0x1BADB002 + (1|2))*/
+
+# setting up the Multiboot header - see GRUB docs for details
+#define MULTIBOOT_HEADER_FLAGS 0x00000003
+.align 4
+multiboot_header:
+	.long MULTIBOOT_HEADER_MAGIC
+	.long MULTIBOOT_HEADER_FLAGS
+	.long -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
 
 ENTRY(start):
-	movl $0x10, %eax /* load segment registers */
-	mov %ax, %ds
-	mov %ax, %es
-	mov %ax, %fs
-	mov %ax, %gs
-	mov %ax, %ss
-	movl $0x8ffff, %esp
-	movb $0x11, %al /* reprogram the interrupts */
+	movl %eax, multiboot_magic
+    movl %ebx, multiboot_mbd
+# reprogram the interrupts
+	movb $0x11, %al
 	outb %al, $0x20
 	outb %al, $0xa0
 	movb $0x20, %al
@@ -25,12 +37,8 @@ ENTRY(start):
 	movb $0xff, %al
 	outb %al, $0x21 /* mask off all interrupt */
 	outb %al, $0xa1
-	call setup_idt /* setup desc tables */
-	call setup_gdt
-	call main
-1:	jmp 1b /* main should never return here */
-
-setup_idt:
+# setup idt desc
+	movl $stack, %esp
 	lea ignore_intr,%edx
 	movl $0x00080000,%eax
 	movw %dx,%ax		/* selector = 0x0008 = cs */
@@ -43,36 +51,43 @@ rp_sidt:
 	addl $8,%edi
 	dec %ecx
 	jne rp_sidt
+# load desc tables
 	lidt idt_desc
-	ret
+	lgdt gdt_desc
+# load segment registers
+	movl $0x10, %eax
+	mov %ax, %ds
+	mov %ax, %es
+	mov %ax, %fs
+	mov %ax, %gs
+	mov %ax, %ss
+	movl $stack, %esp
+# call main
+	call start_kernel
+1:	jmp 1b /* main should never return here */
+
 idt_desc:
 	.word 256*8-1
 	.long idt
 ENTRY(idt):
 	.fill 256,8,0
 ignore_intr:
-	movb $0x20, %al
-	outb %al, $0x20
-	outb %al, $0xa0
 	iret
 
-setup_gdt:
-	lgdt gdt_desc
-	ret
 gdt_desc:
 	.word 5*8-1
 	.long gdt
 ENTRY(gdt):
 	.quad 0x0000000000000000 /* NULL descriptor */
-	.quad 0x00cf9a000000ffff /* 16Mb */
-	.quad 0x00cf92000000ffff /* 16Mb */
+	.quad 0x00cf9a000000ffff /* 4g */
+	.quad 0x00cf92000000ffff /* 4g */
 	.quad 0x0000000000000000 /* tss */
 	.quad 0x0000000000000000 /* ldt */
 
-init_task_stack_head:
-	.fill 128,4,0
-ENTRY(init_task_stack_tail):
+.fill 256,4,0
+stack:
 
-test_task_stack_head:
-	.fill 128,4,0
-ENTRY(test_task_stack_tail):
+ENTRY(multiboot_magic):
+	.long 0
+ENTRY(multiboot_mbd):
+	.long 0

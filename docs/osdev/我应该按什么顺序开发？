@@ -1,0 +1,39 @@
+This is a question of style.You can start at the start and dig straight in, 
+writing a bootsector, then a minimal kernel, and build from there.
+You could skip the bootsector, and use a ready-made bootloader 
+like GRUB (it's open for discussion whether rolling your own bootloader is
+a valuable experience or a waste of time). You can also write bits and pieces
+in no specific order, and just put them together at the very end.
+There is probably no right or wrong way to go about doing it.
+If you would like an overview of things that are handy to get working (
+and are practically a must for every OS), you can keep on reading.
+这是一个关于风格的问题。你可以从最开始开始，接着深入，先写一个引导程序，然后再写一个小型内核，
+从那里开始。你也可以跳过引导程序，用一个已经做好了的引导程序，像GRUB（人们还在讨论写一个自己
+的引导程序会让你得到宝贵的经验还是浪费时间）你也可以无顺序地开发，在最后把它们组合在一起。开发
+操作系统或许没有对或者错的路。如果你想了解一个大概，然后去动手做（几乎所有OS都要这样），你可
+以继续读下去。
+
+For the starter
+致初学者
+1.Printing strings and integer numbers (both decimal and hex) on the screen is 
+certainly a must. This is one of most basic ways of debugging, and virtually all
+of us have gone through a kprint() or kout in version 0.01.
+在显示器上打印字符串和数字（不管是十进制还是十六进制）当然是必须要做的事，这是一个调试的基本方式，
+事实上几乎所有人都要在0.1版里实现一个kprint()或者kout
+Having a working and reliable interrupt/exception handling system that can dump 
+the contents of the registers (and perhaps the address of the fault) will be 
+very useful.
+有一个可靠的中断/异常处理系统能捕捉寄存器的内容（或许也可以捕捉异常的地址）是非常有用的
+The heap: allocating memory at runtime (malloc and free) is almost impossible
+to go without. It should be implemented as soon as possible.
+堆：没有一个在运行时分配内存(malloc和free)几乎是不可能的，应该尽可能快地实现它们。
+Once those steps are completed, whether you'll try to have a working GUI
+before you have a filesystem, multitasking or module-loading is completely
+up to you. Try to sketch out what is likely to depend on what, and do things
+in 'least dependent first' order.
+
+For instance, the GUI could depend on the filesystem to load bitmaps or resources, 
+but you don't necessarily need bitmaps in your very first GUI. Good advice in such
+a case is to design the interface of the filesystem first (be it 
+open/close/read/write or something else), and then go on with whatever
+you prefer, respecting the interface on both sides.
