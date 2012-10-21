@@ -1,7 +1,7 @@
 #ifndef SYSTEM_H_
 #define SYSTEM_H_
 
-#define moveToUserMode() \
+#define move_to_user_mode() \
 __asm__ ("movl %%esp,%%eax\n\t" \
 	"pushl $0x17\n\t" \
 	"pushl %%eax\n\t" \
@@ -32,13 +32,13 @@ __asm__ ("movw %%dx,%%ax\n\t" \
 	"o" (*(4+(char *) (gate_addr))), \
 	"d" ((char *) (addr)),"a" (0x00080000))
 
-#define setIntrGate(n,addr) \
+#define set_intr_gate(n,addr) \
 	_set_gate(&idt[n],14,0,addr)
 
-#define setTrapGate(n,addr) \
+#define set_trap_gate(n,addr) \
 	_set_gate(&idt[n],15,0,addr)
 
-#define setSystemGate(n,addr) \
+#define set_system_gate(n,addr) \
 	_set_gate(&idt[n],15,3,addr)
 
 #define _set_tssldt_desc(n,addr,type) \
@@ -54,7 +54,7 @@ __asm__ ("movw $104,%1\n\t" \
 	 "m" (*(n+5)), "m" (*(n+6)), "m" (*(n+7)) \
 	)
 
-#define setupTSS(addr) _set_tssldt_desc(((char *) (gdt+TSS_ENTRY)),addr,"0x89")
-#define setupLDT(addr) _set_tssldt_desc(((char *) (gdt+LDT_ENTRY)),addr,"0x82")
+#define setup_tss(addr) _set_tssldt_desc(((char *) (gdt+TSS_ENTRY)),addr,"0x89")
+#define setup_ldt(addr) _set_tssldt_desc(((char *) (gdt+LDT_ENTRY)),addr,"0x82")
 
 #endif

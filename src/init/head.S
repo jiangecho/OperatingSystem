@@ -1,24 +1,33 @@
+/* Copyright(C) 2012 Xiaoqie
+ * This file is part of <OS>.
+ *
+ * <OS> is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * <OS> is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with <OS>.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "asm/macro.h"
 #define ASM_FILE
-#include "multiboot.h"
-
-# setting up the Multiboot header - see GRUB docs for details
-/*.align 4
-.long 0x1BADB002
-.long 1|2
-.long -(0x1BADB002 + (1|2))*/
+#include "kernel/multiboot.h"
 
 # setting up the Multiboot header - see GRUB docs for details
 #define MULTIBOOT_HEADER_FLAGS 0x00000003
 .align 4
-multiboot_header:
-	.long MULTIBOOT_HEADER_MAGIC
-	.long MULTIBOOT_HEADER_FLAGS
-	.long -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
+.long MULTIBOOT_HEADER_MAGIC
+.long MULTIBOOT_HEADER_FLAGS
+.long -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
 
-ENTRY(start):
+ENTRY(startup_32):
 	movl %eax, multiboot_magic
-    movl %ebx, multiboot_mbd
+	movl %ebx, multiboot_mbi
 # reprogram the interrupts
 	movb $0x11, %al
 	outb %al, $0x20
@@ -66,17 +75,23 @@ rp_sidt:
 	call start_kernel
 1:	jmp 1b /* main should never return here */
 
-idt_desc:
-	.word 256*8-1
-	.long idt
-ENTRY(idt):
-	.fill 256,8,0
 ignore_intr:
 	iret
 
+.align 4
+.word 0
+idt_desc:
+	.word 256*8-1
+	.long idt
+.align 4
+.word 0
 gdt_desc:
 	.word 5*8-1
 	.long gdt
+
+.align 8
+ENTRY(idt):
+	.fill 256,8,0
 ENTRY(gdt):
 	.quad 0x0000000000000000 /* NULL descriptor */
 	.quad 0x00cf9a000000ffff /* 4g */
@@ -84,10 +99,11 @@ ENTRY(gdt):
 	.quad 0x0000000000000000 /* tss */
 	.quad 0x0000000000000000 /* ldt */
 
-.fill 256,4,0
+____stack_start____:
+	.fill 256,4,0
 stack:
 
 ENTRY(multiboot_magic):
 	.long 0
-ENTRY(multiboot_mbd):
+ENTRY(multiboot_mbi):
 	.long 0

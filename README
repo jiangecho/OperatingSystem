@@ -1,1 +1,5 @@
-The OS has no name now.
+Src including source of this kernel, libc including C library of this kernel.
+This OS publish under GPL License.
+
+src包含了内核源码，libc包含了这个内核的C库。
+这个操作系统在GPL许可证下发布。

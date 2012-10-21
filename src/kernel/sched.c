@@ -1,22 +1,22 @@
 #include "asm/io.h"
-#include "asm/system.h"
+/*#include "asm/system.h"
 #include "asm/head.h"
-#include "ksched.h"
-#include "video.h"
-#include "sys_call.h"
+#include "kernel/tss.h"
+#include "sched.h"
+#include "unistd.h"
+
+typedef long long ldt_t;
 
 extern void timer_interrupt();
 extern void sys_call_int80();
 
-struct Task initTask = INIT_TASK;
-struct Task testTask = INIT_TASK;
-struct Task *next;
-struct Task *current = &initTask;
+task_t initTask = INIT_TASK;
+task_t *next;
+task_t *current = &initTask;
+tss_t tss = INIT_TSS;
+ldt_t ldt[3] = INIT_LDT;
 
-struct TSS tss = INIT_TSS;
-long long ldt[3] = INIT_LDT;
-
-#define switchTo() \
+#define switch_to() \
 	__asm__ __volatile__ ( \
 			"pushl %%esi\n\t" \
 			"pushl %%edi\n\t" \
@@ -33,7 +33,7 @@ long long ldt[3] = INIT_LDT;
 		:"=m"(current->esp), "=m"(current->eip) \
 		 :"m"(next->esp),     "m"(next->eip));
 
-void __switchTo() {
+void __switch_to() {
 	__asm__ __volatile__ (
 			"movl %%eax, %0\n\t"
 			"movl %%ebx, %1\n\t"
@@ -50,50 +50,21 @@ void __switchTo() {
 	current = next;
 }
 
-void testT() {
-	while (1) {
-		drawString(200 | (120 << 16), "test", RGB(255,0,0));
-		drawString(200 | (120 << 16), "test", RGB(255,255,0));
-	}
-}
-
-void scheduleInit() {
-	setupTSS(&tss);
-	setupLDT(&ldt);
+void sched_init() {
+	setup_tss(&tss);
+	setup_ldt(&ldt);
 	__asm__("pushfl ; andl $0xffffbfff,(%esp) ; popfl"); // clear nt
 	__asm__("ltr %%ax"::"a" (TSS_SEL)); // load tss
 	__asm__("lldt %%ax"::"a" (LDT_SEL)); // load ldt
 
-	testTask.cs = 0x0f;
-	testTask.ds = 0x17;
-	testTask.fs = 0x17;
-	testTask.gs = 0x17;
-	testTask.ss = 0x17;
-	testTask.es = 0x17;
-	testTask.esp = 0x6ffff;
-	testTask.eip = (long) &testT;
-	testTask.esp0 = (long) &test_task_stack_tail;
-
 	outb(0x36, 0x43); // setup 8253 chip
 	outb(LATCH & 0xff, 0x40);
 	outb(LATCH >> 8, 0x40);
-	setIntrGate(0x20, &timer_interrupt);
-	setSystemGate(0x80, &sys_call_int80);
+	set_intr_gate(0x20, &timer_interrupt);
+	set_system_gate(0x80, &sys_call_int80);
 	outb(inb(0x21)&~0x01, 0x21); // unmask timer interrupt
 }
 
-void doTimer() {
-	static int i = 0;
-	if (i) {
-		i=0;
-		next = &initTask;
-		switchTo();
-	} else {
-		i=1;
-		next = &testTask;
-		switchTo();
-	}
+void do_timer() {
 }
-
-void schedule() {
-}
+*/

@@ -1,4 +1,4 @@
-ENTRY (start)
+ENTRY (startup_32)
 
 SECTIONS
 {

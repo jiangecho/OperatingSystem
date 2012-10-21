@@ -1,0 +1,6 @@
+This folder including C library.
+The structure of the folder:
+libc
+----<header file name>
+----|---<function name>
+e.g. libc/stdio/printf.c stands for implementation of function "printf()" in "stdio.h"

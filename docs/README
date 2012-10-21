@@ -1,7 +1,13 @@
 This folder stores documentations of OSDevelopment.
 The sub-folder "osdev" stores articles from wiki.osdev.org(translated to Chinese)
 I will write my developing journey(No English version)
+Translating job:
+wiki.osdev.org
+POSIX Standard
 
 这个文件夹存储着关于操作系统内核开发的文档。
 子文件夹"osdev"存储着一些翻译自wiki.osdev.org的文章
 我会把我的开发历程写下来的（无英文版本）
+翻译工作：
+wiki.osdev.org
+POSIX标准

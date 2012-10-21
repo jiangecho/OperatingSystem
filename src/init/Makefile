@@ -1,5 +1,5 @@
 TARGET = target.o
-OBJS = sched.o intr_handler.o sys_call.o 
+OBJS = main.o head.o 
 AS = as
 LD = i586-elf-ld
 CC = i586-elf-gcc
@@ -24,7 +24,7 @@ dep:
 	cp tmp_make Makefile
 	rm tmp_make
 ### Dependencies:
-sched.o: sched.c /home/xiaoqie/workbench/OS/src/include/asm/io.h
-intr_handler.o: intr_handler.S \
- /home/xiaoqie/workbench/OS/src/include/asm/macro.h
-sys_call.o: sys_call.S
+main.o: main.c /home/xiaoqie/workbench/OS/src/include/kernel/multiboot.h \
+ /home/xiaoqie/workbench/OS/src/include/asm/head.h
+head.o: head.S /home/xiaoqie/workbench/OS/src/include/asm/macro.h \
+ /home/xiaoqie/workbench/OS/src/include/kernel/multiboot.h
